@@ -1,0 +1,272 @@
+[
+  {
+    "id": "1",
+    "imageUrl": "./designs/design_1.jpg",
+    "style": "Arabic",
+    "complexity": "Medium",
+    "occasion": "Festival",
+    "title": "Flowing Arabic Floral Trail",
+    "description": "A gorgeous flowing leaf and flower trail extending diagonally across the back of the hand."
+  },
+  {
+    "id": "2",
+    "imageUrl": "./designs/design_2.jpg",
+    "style": "Minimal",
+    "complexity": "Simple",
+    "occasion": "Everyday",
+    "title": "Minimalist Finger Bands",
+    "description": "Clean and delicate geometric bands surrounding the fingers, perfect for a modern everyday look."
+  },
+  {
+    "id": "3",
+    "imageUrl": "./designs/design_3.jpg",
+    "style": "Indian",
+    "complexity": "Detailed",
+    "occasion": "Bridal",
+    "title": "Classic Indian Bridal Palm",
+    "description": "Heavy bridal pattern featuring peacocks, checkerboards, and intricate netting over the palm."
+  },
+  {
+    "id": "4",
+    "imageUrl": "./designs/design_4.jpg",
+    "style": "Rajasthani",
+    "complexity": "Detailed",
+    "occasion": "Bridal",
+    "title": "Royal Rajasthani Hand Design",
+    "description": "Traditional Rajasthani elephant motifs, palace arches, and dense paisley filler patterns."
+  },
+  {
+    "id": "5",
+    "imageUrl": "./designs/design_5.jpg",
+    "style": "Minimal",
+    "complexity": "Simple",
+    "occasion": "Everyday",
+    "title": "Dainty Leafy Wrist Cuff",
+    "description": "A simple vine wrapped around the wrist, resembling a delicate organic bracelet."
+  },
+  {
+    "id": "6",
+    "imageUrl": "./designs/design_6.jpg",
+    "style": "Arabic",
+    "complexity": "Simple",
+    "occasion": "Everyday",
+    "title": "Modern Arabic Wrist Vine",
+    "description": "Bold shading and clean leafy lines that transition smoothly from the wrist to the index finger."
+  },
+  {
+    "id": "7",
+    "imageUrl": "./designs/design_7.jpg",
+    "style": "Indian",
+    "complexity": "Medium",
+    "occasion": "Festival",
+    "title": "Traditional Indian Circle Pattern",
+    "description": "A beautiful circular mandala motif on the palm, surrounded by detailed finger patterns."
+  },
+  {
+    "id": "8",
+    "imageUrl": "./designs/design_8.jpg",
+    "style": "Rajasthani",
+    "complexity": "Medium",
+    "occasion": "Festival",
+    "title": "Rajasthani Checkerboard Palm",
+    "description": "Striking grid panels filled with dots and small floral highlights, classic to desert styles."
+  },
+  {
+    "id": "9",
+    "imageUrl": "./designs/design_9.jpg",
+    "style": "Minimal",
+    "complexity": "Simple",
+    "occasion": "Everyday",
+    "title": "Abstract Dots & Lines",
+    "description": "Ultra-minimalist dots along the knuckles and clean vertical accents down the hand."
+  },
+  {
+    "id": "10",
+    "imageUrl": "./designs/design_10.jpg",
+    "style": "Arabic",
+    "complexity": "Detailed",
+    "occasion": "Festival",
+    "title": "Rich Arabic Rose Motif",
+    "description": "Layers of shaded roses and thick borders that create a high-contrast decorative finish."
+  },
+  {
+    "id": "11",
+    "imageUrl": "./designs/design_11.jpg",
+    "style": "Rajasthani",
+    "complexity": "Detailed",
+    "occasion": "Bridal",
+    "title": "Intricate Palace Arch Mandala",
+    "description": "Fine-line Rajasthani artwork featuring majestic palace arches framing a micro-mandala."
+  },
+  {
+    "id": "12",
+    "imageUrl": "./designs/design_12.jpg",
+    "style": "Indian",
+    "complexity": "Simple",
+    "occasion": "Everyday",
+    "title": "Sweet Pea Hand Trail",
+    "description": "A light and breezy trail of leaves and dots suitable for children or quick applications."
+  },
+  {
+    "id": "13",
+    "imageUrl": "./designs/design_13.jpg",
+    "style": "Indian",
+    "complexity": "Detailed",
+    "occasion": "Bridal",
+    "title": "Double Hand Mirror Design",
+    "description": "Symmetrical bridal patterns where both hands mirror each other's peacocks and mandalas."
+  },
+  {
+    "id": "14",
+    "imageUrl": "./designs/design_14.jpg",
+    "style": "Minimal",
+    "complexity": "Simple",
+    "occasion": "Everyday",
+    "title": "Petite Ring Finger Henna",
+    "description": "A singular delicate flower on the ring finger with simple leaf tips."
+  },
+  {
+    "id": "15",
+    "imageUrl": "./designs/design_15.jpg",
+    "style": "Arabic",
+    "complexity": "Detailed",
+    "occasion": "Bridal",
+    "title": "Arabic Heavy Glove Design",
+    "description": "Thick lines intertwined with fine-line shading, creating a full-coverage glove effect."
+  },
+  {
+    "id": "16",
+    "imageUrl": "./designs/design_16.jpg",
+    "style": "Indian",
+    "complexity": "Medium",
+    "occasion": "Festival",
+    "title": "Graceful Peacock Trail",
+    "description": "Elegant peacock heads rising from the wrist and trailing gracefully over the index finger."
+  },
+  {
+    "id": "17",
+    "imageUrl": "./designs/design_17.jpg",
+    "style": "Rajasthani",
+    "complexity": "Detailed",
+    "occasion": "Bridal",
+    "title": "Rajasthani Royal Elephant Motif",
+    "description": "A highly detailed wrist cuff showcasing marching elephants and traditional grid patterns."
+  },
+  {
+    "id": "18",
+    "imageUrl": "./designs/design_18.jpg",
+    "style": "Arabic",
+    "complexity": "Medium",
+    "occasion": "Festival",
+    "title": "Criss-Cross Arabic Netting",
+    "description": "Diagonally aligned grid elements bordered by bold leaves, displaying classic Arabic spacing."
+  },
+  {
+    "id": "19",
+    "imageUrl": "./designs/design_19.jpg",
+    "style": "Minimal",
+    "complexity": "Simple",
+    "occasion": "Everyday",
+    "title": "Single Wrist Band",
+    "description": "A neat bracelet-style band featuring small triangular points and single dots."
+  },
+  {
+    "id": "20",
+    "imageUrl": "./designs/design_20.jpg",
+    "style": "Indian",
+    "complexity": "Medium",
+    "occasion": "Festival",
+    "title": "Elegant Lotus Mandala",
+    "description": "A classic central mandala consisting of layered lotus petals and fine radial spacing."
+  },
+  {
+    "id": "21",
+    "imageUrl": "./designs/design_21.jpg",
+    "style": "Minimal",
+    "complexity": "Simple",
+    "occasion": "Everyday",
+    "title": "Minimal Crescent Moon",
+    "description": "A dainty crescent moon and star patterns located on the back hand."
+  },
+  {
+    "id": "22",
+    "imageUrl": "./designs/design_22.jpg",
+    "style": "Arabic",
+    "complexity": "Medium",
+    "occasion": "Everyday",
+    "title": "Chic Chevron Lines",
+    "description": "V-shaped chevron patterns running along the index finger with leafy wrist extensions."
+  },
+  {
+    "id": "23",
+    "imageUrl": "./designs/design_23.jpg",
+    "style": "Indian",
+    "complexity": "Detailed",
+    "occasion": "Bridal",
+    "title": "Gilded Lotus Cuffs",
+    "description": "Elaborate lotus buds inside dark negative spaces, forming a premium bridal wrist cuff."
+  },
+  {
+    "id": "24",
+    "imageUrl": "./designs/design_24.jpg",
+    "style": "Rajasthani",
+    "complexity": "Medium",
+    "occasion": "Festival",
+    "title": "Traditional Desert Sun Motif",
+    "description": "Bold sunburst rays extending from a solid center, bordered by intricate swirl work."
+  },
+  {
+    "id": "25",
+    "imageUrl": "./designs/design_25.jpg",
+    "style": "Minimal",
+    "complexity": "Simple",
+    "occasion": "Everyday",
+    "title": "Single Finger Vine",
+    "description": "A simple leafy branch winding only around the middle finger."
+  },
+  {
+    "id": "26",
+    "imageUrl": "./designs/design_26.jpg",
+    "style": "Arabic",
+    "complexity": "Medium",
+    "occasion": "Festival",
+    "title": "Flowing Paisley Trail",
+    "description": "Connected paisley elements (kalka) flowing smoothly across the hand."
+  },
+  {
+    "id": "27",
+    "imageUrl": "./designs/design_27.jpg",
+    "style": "Indian",
+    "complexity": "Detailed",
+    "occasion": "Bridal",
+    "title": "Royal Shehnai Bridal Pattern",
+    "description": "Visual motifs representing traditional instruments, combined with fine-mesh layouts."
+  },
+  {
+    "id": "28",
+    "imageUrl": "./designs/design_28.jpg",
+    "style": "Rajasthani",
+    "complexity": "Detailed",
+    "occasion": "Bridal",
+    "title": "Symmetrical Royal Arch",
+    "description": "A symmetrical mirror pattern featuring elegant dome shapes and matching finger columns."
+  },
+  {
+    "id": "29",
+    "imageUrl": "./designs/design_29.jpg",
+    "style": "Minimal",
+    "complexity": "Simple",
+    "occasion": "Everyday",
+    "title": "Geometric Knuckles",
+    "description": "Tiny triangles and dot groupings aligned along the finger joints."
+  },
+  {
+    "id": "30",
+    "imageUrl": "./designs/design_30.jpg",
+    "style": "Arabic",
+    "complexity": "Medium",
+    "occasion": "Festival",
+    "title": "Asymmetrical Floral Cuff",
+    "description": "Bold floral clusters concentrated on the side of the hand, fading into fine trails."
+  }
+]
