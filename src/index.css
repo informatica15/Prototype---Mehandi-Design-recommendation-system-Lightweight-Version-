@@ -6,94 +6,43 @@
 
 @layer base {
   body {
-    @apply bg-amber-50/50 text-slate-800 font-sans antialiased selection:bg-brand-200 selection:text-brand-900 min-h-screen transition-colors duration-300;
-    background-image: 
-      radial-gradient(at 0% 0%, hsla(38,100%,96%,1) 0, transparent 50%),
-      radial-gradient(at 50% 0%, hsla(48,100%,94%,1) 0, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(343,100%,97%,1) 0, transparent 50%);
+    @apply bg-white text-zinc-800 font-sans antialiased min-h-screen transition-colors duration-300 selection:bg-teal-100 selection:text-teal-900;
   }
 
   body.dark {
-    @apply bg-slate-950 text-slate-100;
-    background-image: 
-      radial-gradient(at 0% 0%, hsla(24,37%,10%,1) 0, transparent 50%),
-      radial-gradient(at 50% 0%, hsla(343,45%,8%,1) 0, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(240,40%,6%,1) 0, transparent 50%);
-  }
-}
-
-@layer components {
-  .glass-panel {
-    @apply bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-white/20 dark:border-slate-800/50 shadow-lg shadow-amber-900/5 dark:shadow-black/20;
-  }
-  
-  .glass-card {
-    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/30 dark:border-slate-800/40 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-2xl overflow-hidden;
-  }
-
-  .glass-input {
-    @apply bg-white/50 dark:bg-slate-950/40 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-xl focus:border-brand-500 focus:ring-2 focus:ring-brand-200 focus:outline-none transition-all duration-200;
-  }
-
-  .btn-primary {
-    @apply bg-gradient-to-r from-brand-600 to-roseGold-700 hover:from-brand-700 hover:to-roseGold-800 text-white font-medium py-3 px-6 rounded-xl shadow-md hover:shadow-lg transform active:scale-95 transition-all duration-200 flex items-center justify-center gap-2;
-  }
-
-  .btn-secondary {
-    @apply bg-white/80 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800/80 font-medium py-3 px-6 rounded-xl shadow-sm hover:shadow active:scale-95 transition-all duration-200 flex items-center justify-center gap-2;
+    @apply bg-[#212121] text-zinc-200 selection:bg-teal-950 selection:text-teal-200;
   }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-slate-100/50 dark:bg-slate-950/20;
+  @apply bg-transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 dark:bg-slate-800 rounded-full hover:bg-slate-400 dark:hover:bg-slate-700;
+  @apply bg-zinc-200 dark:bg-zinc-800 rounded-full hover:bg-zinc-300 dark:hover:bg-zinc-700;
 }
 
-/* Shimmer animation */
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
+/* Custom transitions and animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.shimmer-effect {
-  position: relative;
-  overflow: hidden;
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.shimmer-effect::after {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  transform: translateX(-100%);
-  background-image: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.2) 20%,
-    rgba(255, 255, 255, 0.6) 60%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  animation: shimmer 2s infinite;
-  content: '';
+@keyframes scaleIn {
+  from { transform: scale(0.97); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
-.dark .shimmer-effect::after {
-  background-image: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.05) 20%,
-    rgba(255, 255, 255, 0.15) 60%,
-    rgba(255, 255, 255, 0) 100%
-  );
+.animate-scale-in {
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

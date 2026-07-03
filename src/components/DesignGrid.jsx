@@ -1,68 +1,70 @@
 import React from 'react';
-import { Eye, Flame, Award, Sliders } from 'lucide-react';
+import { Eye, Sparkles, Heart } from 'lucide-react';
 
 export default function DesignGrid({ 
   designs, 
   onDesignClick, 
   onFindSimilar, 
   referenceImageId,
-  isSimilarityActive 
+  isSimilarityActive,
+  favorites = [],
+  onToggleFavorite
 }) {
   if (designs.length === 0) {
     return (
-      <div className="glass-panel rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[300px] animate-fade-in">
-        <div className="text-slate-400 dark:text-slate-600 mb-3 bg-slate-100 dark:bg-slate-900 p-4 rounded-full">
-          <Sliders size={32} />
-        </div>
-        <h3 className="text-lg font-serif font-bold text-slate-700 dark:text-slate-200">
-          No matches found
+      <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl p-12 text-center flex flex-col items-center justify-center min-h-[220px] bg-zinc-50/50 dark:bg-zinc-900/10">
+        <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-200">
+          No matching designs found
         </h3>
-        <p className="text-sm text-slate-400 dark:text-slate-500 mt-1 max-w-sm">
-          Try loosening your filter constraints or clearing your similarity reference image.
+        <p className="text-[10px] text-zinc-400 dark:text-zinc-550 mt-1 max-w-xs leading-normal">
+          Adjust search keywords or check active dropdown categories in the left panel.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-fade-in">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5">
       {designs.map((design) => {
         const isCurrentReference = referenceImageId === design.id;
+        const hasScore = isSimilarityActive && design.similarityScore > 0;
+        const isFavorited = favorites.includes(design.id);
         
-        // Dynamic badge color depending on match score
-        let badgeColor = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400';
-        if (isSimilarityActive) {
-          if (design.similarityScore >= 85) {
-            badgeColor = 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/50';
-          } else if (design.similarityScore >= 70) {
-            badgeColor = 'bg-brand-100 dark:bg-brand-950/50 text-brand-700 dark:text-brand-400 border border-brand-200/50';
-          } else {
-            badgeColor = 'bg-slate-100 dark:bg-slate-900/70 text-slate-500 dark:text-slate-400';
+        // Match score styling
+        let badgeStyle = 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400';
+        if (hasScore) {
+          if (design.similarityScore >= 80) {
+            badgeStyle = 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 border border-teal-200/25 dark:border-teal-900/25';
+          } else if (design.similarityScore >= 50) {
+            badgeStyle = 'bg-zinc-50 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-450 border border-zinc-200/20';
           }
         }
 
         return (
           <div 
             key={design.id}
-            className={`glass-card group flex flex-col justify-between relative
-              ${isCurrentReference ? 'ring-2 ring-brand-500 dark:ring-brand-400 scale-[0.98] shadow-inner' : ''}`}
+            className={`flex flex-col justify-between rounded-xl overflow-hidden border transition-all duration-300 bg-white dark:bg-[#252525] ${
+              isCurrentReference 
+                ? 'border-teal-500 shadow-sm ring-1 ring-teal-500/50' 
+                : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow'
+            }`}
           >
             {/* Image section */}
-            <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
+            <div className="relative aspect-square w-full overflow-hidden bg-zinc-50 dark:bg-zinc-900 group">
               <img 
                 src={design.imageUrl} 
                 alt={design.title} 
-                className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                 loading="lazy"
               />
               
-              {/* Image Overlays */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-between p-4">
+              {/* Overlay controls on hover */}
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
                 <button 
                   onClick={() => onDesignClick(design)}
-                  className="bg-white/90 dark:bg-slate-900/90 hover:bg-white text-slate-800 dark:text-slate-100 p-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow backdrop-blur-sm transition-all duration-200 transform translate-y-2 group-hover:translate-y-0"
+                  className="bg-white text-zinc-900 text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-md hover:bg-zinc-100 transition-all"
                 >
-                  <Eye size={14} />
+                  <Eye size={12} />
                   View Details
                 </button>
                 
@@ -74,59 +76,65 @@ export default function DesignGrid({
                       title: design.title,
                       isCustom: false
                     })}
-                    className="bg-brand-600 hover:bg-brand-700 text-white p-2 rounded-xl text-xs font-semibold shadow transition-all duration-200 transform translate-y-2 group-hover:translate-y-0"
+                    className="bg-teal-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-md hover:bg-teal-700 transition-all"
                   >
+                    <Sparkles size={12} />
                     Find Similar
                   </button>
                 )}
               </div>
 
-              {/* Match Score Badge (AI indicator) */}
-              {isSimilarityActive && (
-                <div className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-md backdrop-blur-sm ${badgeColor}`}>
-                  {isCurrentReference ? (
-                    <span className="flex items-center gap-1">
-                      <Award size={10} />
-                      Reference Query
-                    </span>
-                  ) : (
-                    <span>{design.similarityScore}% Match</span>
-                  )}
+              {/* Heart/Bookmark button in top right corner */}
+              <button
+                onClick={() => onToggleFavorite(design.id)}
+                className="absolute top-2.5 right-2.5 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors z-10"
+                title={isFavorited ? "Remove from bookmarks" : "Save to bookmarks"}
+              >
+                <Heart 
+                  size={14} 
+                  className={isFavorited ? "fill-red-500 text-red-500" : "text-white"} 
+                />
+              </button>
+
+              {/* Match Score / Reference Indicator */}
+              {isCurrentReference ? (
+                <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md text-[9px] font-bold shadow-sm bg-teal-600 text-white uppercase tracking-wider">
+                  Active Reference
                 </div>
-              )}
+              ) : hasScore ? (
+                <div className={`absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md text-[10px] font-bold shadow-sm ${badgeStyle}`}>
+                  {design.similarityScore}% Match
+                </div>
+              ) : null}
             </div>
 
-            {/* Content section */}
-            <div className="p-4 flex-grow flex flex-col justify-between bg-white/40 dark:bg-slate-900/40 border-t border-slate-100/50 dark:border-slate-800/30">
-              <div className="mb-3">
-                <div className="flex items-center gap-1 mb-1">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                    {design.style} Style
-                  </span>
-                  <span className="text-[10px] text-slate-300 dark:text-slate-700">•</span>
-                  <span className="text-[10px] font-semibold text-brand-600 dark:text-brand-400">
-                    {design.complexity}
-                  </span>
+            {/* Content card body */}
+            <div className="p-4 flex-grow flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-1 text-[10px] font-medium text-zinc-400 dark:text-zinc-500 mb-1">
+                  <span>{design.style} Style</span>
+                  <span>•</span>
+                  <span>{design.complexity}</span>
                 </div>
-                <h4 className="font-serif font-bold text-sm text-slate-800 dark:text-slate-100 group-hover:text-brand-700 dark:group-hover:text-brand-400 transition-colors duration-200 line-clamp-1">
+                <h4 className="font-semibold text-xs text-zinc-800 dark:text-zinc-200 line-clamp-1">
                   {design.title}
                 </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
                   {design.description}
                 </p>
               </div>
 
-              {/* Tags and interaction summary */}
-              <div className="flex items-center justify-between pt-3 border-t border-slate-100/80 dark:border-slate-800/40">
-                <span className="text-[10px] font-medium bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-450 px-2 py-0.5 rounded-md">
+              {/* Card Footer tags */}
+              <div className="flex items-center justify-between pt-3 mt-3 border-t border-zinc-100 dark:border-zinc-800">
+                <span className="text-[9px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2 py-0.5 rounded">
                   {design.occasion}
                 </span>
                 
                 <button
                   onClick={() => onDesignClick(design)}
-                  className="text-xs font-semibold text-brand-700 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300 flex items-center gap-1 transition-colors duration-200"
+                  className="text-[11px] font-semibold text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 transition-colors"
                 >
-                  Inspect
+                  View Details
                 </button>
               </div>
             </div>
