@@ -62,19 +62,8 @@ export default function App() {
   // Live Camera states & references
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
-  // Google Lens–style lens box state (percentages 0–1)
-  const [lensBox, setLensBox] = useState({ x: 0.18, y: 0.22, w: 0.64, h: 0.56 });
-  const [isStabilized, setIsStabilized] = useState(false);
-  const [autoCapturing, setAutoCapturing] = useState(false);
-  const [isShrinking, setIsShrinking] = useState(false);
-  const [handDetected, setHandDetected] = useState(false);   // true only when hand pixels exceed threshold
-  const [noHandWarning, setNoHandWarning] = useState(false); // flashes warning on manual snap without hand
   const videoRef = useRef(null);
   const streamRef = useRef(null);
-  const trackingCanvasRef = useRef(null);
-  const trackingIntervalRef = useRef(null);
-  const stabilizationTimerRef = useRef(null);
-  const dragStateRef = useRef(null); // { handle, startX, startY, startBox }
 
   // Filter dropdown toggle states
   const [activeFilterDropdown, setActiveFilterDropdown] = useState(null); // 'style' | 'complexity' | 'occasion' | 'placement' | null
@@ -216,201 +205,28 @@ export default function App() {
     }
   };
 
-  // ── Google Lens: skin-tone detection + stabilization + auto-capture ──
-  useEffect(() => {
-    if (!isCameraOpen) {
-      clearInterval(trackingIntervalRef.current);
-      clearTimeout(stabilizationTimerRef.current);
-      trackingIntervalRef.current = null;
-      stabilizationTimerRef.current = null;
-      setIsStabilized(false);
-      setAutoCapturing(false);
-      setLensBox({ x: 0.18, y: 0.22, w: 0.64, h: 0.56 });
-      return;
-    }
-
-    if (!trackingCanvasRef.current) {
-      trackingCanvasRef.current = document.createElement('canvas');
-    }
-    const tc = trackingCanvasRef.current;
-    tc.width = 40; tc.height = 30;
-    const tctx = tc.getContext('2d', { willReadFrequently: true });
-
-    let stableFrames = 0;
-    let prevCx = 0.5, prevCy = 0.5;
-
-    trackingIntervalRef.current = setInterval(() => {
-      const video = videoRef.current;
-      if (!video || video.readyState < 2) return;
-      tctx.drawImage(video, 0, 0, 40, 30);
-      const { data } = tctx.getImageData(0, 0, 40, 30);
-
-      let sumX = 0, sumY = 0, count = 0;
-      let minX = 1, maxX = 0, minY = 1, maxY = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i], g = data[i + 1], b = data[i + 2];
-        if (r > 80 && g > 40 && b > 20 && r > g && r > b && (r - g) > 10) {
-          const px = ((i / 4) % 40) / 40;
-          const py = Math.floor((i / 4) / 40) / 30;
-          sumX += px; sumY += py; count++;
-          if (px < minX) minX = px; if (px > maxX) maxX = px;
-          if (py < minY) minY = py; if (py > maxY) maxY = py;
-        }
-      }
-
-      // Require a meaningful cluster of skin pixels to qualify as a hand
-      const handPresent = count > 40;
-      setHandDetected(handPresent);
-
-      if (handPresent) {
-        const cx = sumX / count;
-        const cy = sumY / count;
-        const spread = Math.max(maxX - minX, 0.12);
-        const spreadY = Math.max(maxY - minY, 0.10);
-        // Smoothly move and resize the lens box toward the hand
-        setLensBox(prev => {
-          const newW = Math.min(0.72, Math.max(0.24, spread * 2.2));
-          const newH = Math.min(0.65, Math.max(0.20, spreadY * 2.2));
-          return {
-            x: prev.x + (cx - newW / 2 - prev.x) * 0.12,
-            y: prev.y + (cy - newH / 2 - prev.y) * 0.12,
-            w: prev.w + (newW - prev.w) * 0.12,
-            h: prev.h + (newH - prev.h) * 0.12,
-          };
-        });
-
-        // Stabilization: if centroid hasn't moved much for 10 frames → stabilized
-        const moved = Math.hypot(cx - prevCx, cy - prevCy);
-        if (moved < 0.04) {
-          stableFrames++;
-          if (stableFrames >= 10 && !isStabilized) {
-            setIsStabilized(true);
-          }
-        } else {
-          stableFrames = 0;
-          setIsStabilized(false);
-        }
-        prevCx = cx; prevCy = cy;
-      } else {
-        stableFrames = 0;
-        setIsStabilized(false);
-      }
-    }, 80);
-
-    return () => {
-      clearInterval(trackingIntervalRef.current);
-      clearTimeout(stabilizationTimerRef.current);
-      trackingIntervalRef.current = null;
-      stabilizationTimerRef.current = null;
-    };
-  }, [isCameraOpen]);
-
-  // Auto-capture when stabilized for 1.2s — hand is guaranteed present at this point
-  useEffect(() => {
-    if (isStabilized && !autoCapturing) {
-      setAutoCapturing(true);
-      stabilizationTimerRef.current = setTimeout(() => {
-        doCapture(true); // force=true: hand is confirmed stable
-        setAutoCapturing(false);
-        setIsStabilized(false);
-      }, 1200);
-    }
-    if (!isStabilized) {
-      clearTimeout(stabilizationTimerRef.current);
-      stabilizationTimerRef.current = null;
-      setAutoCapturing(false);
-    }
-  }, [isStabilized]);
-
-  // Core snap function — only fires when a hand is in frame
-  const doCapture = (force = false) => {
+  // Simple snapshot — captures the full camera frame
+  const doCapture = () => {
     if (!videoRef.current || !streamRef.current) return;
-    // Block if no hand detected, unless this is an auto-capture (force=true)
-    if (!force && !handDetected) {
-      setNoHandWarning(true);
-      setTimeout(() => setNoHandWarning(false), 1200);
-      return;
-    }
-    setIsShrinking(true);
     setTimeout(() => {
       const video = videoRef.current;
       if (!video) return;
       const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth || 640;
+      canvas.width  = video.videoWidth  || 640;
       canvas.height = video.videoHeight || 640;
       canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
       setStagedImage({
         id: 'capture_' + Date.now(),
-        src: canvas.toDataURL('image/jpeg'),
-        title: `Hand Snap (${new Date().toLocaleTimeString()})`,
+        src: canvas.toDataURL('image/jpeg', 0.92),
+        title: `Camera Snap (${new Date().toLocaleTimeString()})`,
         isCustom: true
       });
       setShowFlash(true);
       setTimeout(() => setShowFlash(false), 160);
-      setIsShrinking(false);
-    }, 300);
+    }, 80);
   };
 
-  // Manual shutter — passes handDetected check
-  const handleCaptureFrame = () => doCapture(false);
-
-  // ── Drag-to-resize lens box handlers ──────────────────────────────
-  const handleLensDragStart = (e, handle) => {
-    e.preventDefault();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    dragStateRef.current = { handle, startX: clientX, startY: clientY, startBox: { ...lensBox } };
-    window.addEventListener('mousemove', handleLensDragMove);
-    window.addEventListener('mouseup', handleLensDragEnd);
-    window.addEventListener('touchmove', handleLensDragMove, { passive: false });
-    window.addEventListener('touchend', handleLensDragEnd);
-  };
-
-  const handleLensDragMove = (e) => {
-    if (!dragStateRef.current) return;
-    e.preventDefault();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    const { handle, startX, startY, startBox } = dragStateRef.current;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const dx = (clientX - startX) / vw;
-    const dy = (clientY - startY) / vh;
-    setLensBox(prev => {
-      let { x, y, w, h } = startBox;
-      if (handle === 'tl') { x += dx; y += dy; w -= dx; h -= dy; }
-      if (handle === 'tr') { y += dy; w += dx; h -= dy; }
-      if (handle === 'bl') { x += dx; w -= dx; h += dy; }
-      if (handle === 'br') { w += dx; h += dy; }
-      // Clamp
-      w = Math.max(0.15, Math.min(0.9, w));
-      h = Math.max(0.12, Math.min(0.85, h));
-      x = Math.max(0, Math.min(1 - w, x));
-      y = Math.max(0, Math.min(1 - h, y));
-      return { x, y, w, h };
-    });
-  };
-
-  const handleLensDragEnd = () => {
-    dragStateRef.current = null;
-    window.removeEventListener('mousemove', handleLensDragMove);
-    window.removeEventListener('mouseup', handleLensDragEnd);
-    window.removeEventListener('touchmove', handleLensDragMove);
-    window.removeEventListener('touchend', handleLensDragEnd);
-  };
-
-  // Click on dimmed area to re-center lens box
-  const handleLensAreaClick = (e) => {
-    if (e.target !== e.currentTarget) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const cx = (e.clientX - rect.left) / rect.width;
-    const cy = (e.clientY - rect.top) / rect.height;
-    setLensBox(prev => ({
-      ...prev,
-      x: Math.max(0, Math.min(1 - prev.w, cx - prev.w / 2)),
-      y: Math.max(0, Math.min(1 - prev.h, cy - prev.h / 2)),
-    }));
-  };
+  const handleCaptureFrame = () => doCapture();
 
 
   // Submit search request to conversation flow
@@ -652,87 +468,48 @@ export default function App() {
             isCameraOpen ? 'opacity-90' : 'opacity-0'
           }`}
         />
-        {/* ── Clean corner-bracket camera overlay (reference style) ──────── */}
-        {isCameraOpen && (() => {
-          const bracketColor = isStabilized ? 'rgba(74,222,128,0.95)' : 'rgba(255,255,255,0.90)';
-          const glow = isStabilized ? '0 0 12px 3px rgba(74,222,128,0.5)' : 'none';
-          const bracketLen = 22; // px
-          const thickness = 3;  // px
-          const pad = 20;       // inset from viewport edge
+        {/* ── Static camera viewfinder overlay ─────────────────────── */}
+        {isCameraOpen && (
+          <>
+            {/* Edge vignette */}
+            <div
+              className="absolute inset-0 z-10 pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse 88% 76% at 50% 46%, transparent 48%, rgba(0,0,0,0.38) 100%)' }}
+            />
 
-          const corners = [
-            { top: pad, left: pad,   borderTop: thickness, borderLeft: thickness,   borderRight: 0, borderBottom: 0 },
-            { top: pad, right: pad,  borderTop: thickness, borderRight: thickness,  borderLeft: 0,  borderBottom: 0 },
-            { bottom: pad, left: pad,  borderBottom: thickness, borderLeft: thickness,  borderRight: 0, borderTop: 0 },
-            { bottom: pad, right: pad, borderBottom: thickness, borderRight: thickness, borderLeft: 0,  borderTop: 0 },
-          ];
+            {/* Corner bracket viewfinder — static, decorative */}
+            {[['top-10 left-10','borderTop','borderLeft','rounded-tl-2xl'],
+              ['top-10 right-10','borderTop','borderRight','rounded-tr-2xl'],
+              ['bottom-28 left-10','borderBottom','borderLeft','rounded-bl-2xl'],
+              ['bottom-28 right-10','borderBottom','borderRight','rounded-br-2xl'],
+            ].map(([pos, b1, b2, rad], i) => (
+              <div
+                key={i}
+                className={`absolute z-20 pointer-events-none w-14 h-14 ${pos} ${rad}`}
+                style={{
+                  [b1]: '2px solid rgba(255,255,255,0.82)',
+                  [b2]: '2px solid rgba(255,255,255,0.82)',
+                  animation: 'pulse 3s ease-in-out infinite',
+                  animationDelay: `${i * 0.2}s`,
+                }}
+              />
+            ))}
 
-          return (
-            <>
-              {/* Four corner L-brackets */}
-              {corners.map((c, i) => (
-                <div
-                  key={i}
-                  className="absolute z-20 pointer-events-none"
-                  style={{
-                    width: bracketLen,
-                    height: bracketLen,
-                    top: c.top, left: c.left, right: c.right, bottom: c.bottom,
-                    borderStyle: 'solid',
-                    borderColor: bracketColor,
-                    borderTopWidth:    c.borderTop    || 0,
-                    borderLeftWidth:   c.borderLeft   || 0,
-                    borderRightWidth:  c.borderRight  || 0,
-                    borderBottomWidth: c.borderBottom || 0,
-                    borderRadius: i === 0 ? '4px 0 0 0' : i === 1 ? '0 4px 0 0' : i === 2 ? '0 0 0 4px' : '0 0 4px 0',
-                    boxShadow: glow,
-                    transition: 'border-color 0.4s ease, box-shadow 0.4s ease',
-                  }}
-                />
-              ))}
+            {/* Animated horizontal scan line */}
+            <div
+              className="absolute left-10 right-10 z-20 pointer-events-none lens-scan-line"
+              style={{ height: '1.5px', background: 'linear-gradient(to right, transparent 0%, rgba(255,255,255,0.6) 30%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.6) 70%, transparent 100%)' }}
+            />
 
-              {/* Scan line when NOT stabilized */}
-              {!isStabilized && (
-                <div
-                  className="absolute left-0 right-0 z-20 pointer-events-none lens-scan-line"
-                  style={{
-                    height: '1.5px',
-                    background: 'linear-gradient(to right, transparent 10%, rgba(255,255,255,0.55) 50%, transparent 90%)',
-                  }}
-                />
-              )}
+            {/* Hint chip */}
+            <div className="absolute bottom-24 left-0 right-0 z-20 flex justify-center pointer-events-none">
+              <span className="text-[10px] tracking-widest font-semibold px-3 py-1 rounded-full text-white/75 bg-black/30 backdrop-blur-sm">
+                Tap ⊙ to capture
+              </span>
+            </div>
+          </>
+        )}
 
-              {/* Ripple rings when stabilized */}
-              {isStabilized && (
-                <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
-                  <div className="lens-ripple w-20 h-20 rounded-full border border-green-400/50" />
-                  <div className="lens-ripple absolute w-32 h-32 rounded-full border border-green-400/25" style={{ animationDelay: '0.3s' }} />
-                </div>
-              )}
-
-              {/* Minimal status chip — bottom-center */}
-              <div className="absolute bottom-36 left-0 right-0 z-20 flex justify-center pointer-events-none">
-                <span className={`text-[10px] tracking-widest font-semibold px-3 py-1 rounded-full backdrop-blur-sm transition-all duration-300 ${
-                  noHandWarning  ? 'text-red-300 bg-black/60 animate-pulse' :
-                  isShrinking    ? 'text-white bg-black/50' :
-                  autoCapturing  ? 'text-green-300 bg-black/50' :
-                  isStabilized   ? 'text-green-300 bg-black/50' :
-                  handDetected   ? 'text-yellow-200 bg-black/40' :
-                                   'text-white/70 bg-black/30'
-                }`}>
-                  {noHandWarning ? '✋ Show your hand first' :
-                   isShrinking   ? 'Capturing…' :
-                   autoCapturing ? 'Analysing…' :
-                   isStabilized  ? '✓ Hold still — snapping' :
-                   handDetected  ? 'Hand detected — hold steady' :
-                                   'Show your hand to capture'}
-                </span>
-              </div>
-
-              {/* Tap anywhere to re-centre brackets (no-op needed; brackets are fixed to viewport edges) */}
-            </>
-          );
-        })()}
 
 
         {/* Top Header */}
@@ -890,18 +667,22 @@ export default function App() {
 
         </div>
 
-        {/* 3. Floating Bottom Input Console (ChatGPT style) */}
-        <div className={`absolute bottom-0 inset-x-0 pt-10 pb-6 px-6 z-10 transition-all duration-300 ${
-          isCameraOpen 
-            ? 'bg-gradient-to-t from-zinc-50/40 dark:from-[#212121]/45 to-transparent' 
-            : 'bg-gradient-to-t from-zinc-50 dark:from-[#212121] via-zinc-50/90 dark:via-[#212121]/90 to-transparent'
+        {/* 3. Floating Bottom Input Console — shrinks & goes glassy when camera is live */}
+        <div className={`absolute bottom-0 inset-x-0 z-10 transition-all duration-400 ease-out ${
+          isCameraOpen
+            ? 'pt-4 pb-3 px-6 bg-gradient-to-t from-black/10 to-transparent'
+            : 'pt-10 pb-6 px-6 bg-gradient-to-t from-zinc-50 dark:from-[#212121] via-zinc-50/90 dark:via-[#212121]/90 to-transparent'
         }`}>
           <div className="max-w-2xl mx-auto space-y-3">
             
             {/* Floating pill Input Box */}
-            <form 
+            <form
               onSubmit={handleSendPrompt}
-              className="group relative bg-white dark:bg-[#2d2d2d] border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-md p-2 flex flex-col transition-all duration-300 ease-out transform hover:-translate-y-1.5 hover:scale-[1.015] hover:shadow-lg hover:border-brand-500 focus-within:-translate-y-1.5 focus-within:scale-[1.015] focus-within:shadow-lg focus-within:border-brand-500"
+              className={`group relative border rounded-2xl flex flex-col transition-all duration-400 ease-out ${
+                isCameraOpen
+                  ? 'bg-white/15 dark:bg-white/8 backdrop-blur-md border-white/25 shadow-lg scale-[0.88] origin-bottom opacity-80 p-1.5 hover:scale-[0.94] hover:opacity-100 focus-within:scale-100 focus-within:opacity-100 focus-within:bg-white dark:focus-within:bg-[#2d2d2d] focus-within:border-brand-500'
+                  : 'bg-white dark:bg-[#2d2d2d] border-zinc-200 dark:border-zinc-800 shadow-md p-2 hover:-translate-y-1.5 hover:scale-[1.015] hover:shadow-lg hover:border-brand-500 focus-within:-translate-y-1.5 focus-within:scale-[1.015] focus-within:shadow-lg focus-within:border-brand-500'
+              }`}
             >
               {/* Joined camera tab header sitting flush on top of the chat box border */}
               <button
@@ -909,8 +690,8 @@ export default function App() {
                 onClick={handleToggleCamera}
                 className={`absolute -top-[27px] left-1/2 -translate-x-1/2 z-20 h-[28px] px-3.5 rounded-t-xl border-t border-x border-b-0 flex items-center gap-1.5 hover:scale-[1.02] active:scale-95 transition-all duration-200 text-[10px] font-bold ${
                   isCameraOpen
-                    ? 'bg-brand-50 border-brand-200 text-brand-700 dark:bg-brand-950 dark:border-brand-900 dark:text-brand-400 hover:border-brand-300 dark:hover:border-brand-800'
-                    : 'bg-white dark:bg-[#2d2d2d] border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-brand-700 dark:hover:text-brand-400 hover:border-brand-400 dark:hover:border-brand-600 group-hover:text-brand-700 dark:group-hover:text-brand-400 group-hover:border-brand-400 dark:group-hover:border-brand-600'
+                    ? 'bg-brand-50 border-brand-500 text-brand-700 dark:bg-brand-950 dark:border-brand-500 dark:text-brand-400'
+                    : 'bg-white dark:bg-[#2d2d2d] border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-brand-700 dark:hover:text-brand-400 hover:border-brand-500 dark:hover:border-brand-500 group-hover:border-brand-500 dark:group-hover:border-brand-500 group-hover:text-brand-700 dark:group-hover:text-brand-400 group-focus-within:border-brand-500 dark:group-focus-within:border-brand-500 group-focus-within:text-brand-700 dark:group-focus-within:text-brand-400'
                 }`}
                 title={isCameraOpen ? "Turn off live camera backdrop" : "Turn on live camera backdrop"}
               >
@@ -918,7 +699,8 @@ export default function App() {
                 <span>Camera Backdrop</span>
               </button>
 
-              {/* Simple parameter toggles embedded in the chat box */}
+              {/* Filter pills — hidden when camera is open to save space */}
+              {!isCameraOpen && (
               <div className="flex flex-wrap items-center justify-center gap-1 px-2 pt-4 pb-1 mb-1.5">
                 <button
                   type="button"
@@ -972,6 +754,7 @@ export default function App() {
                   Occasion: {filters.occasion}
                 </button>
               </div>
+              )}
 
               {/* Mini thumbnail reference preview badge */}
               {stagedImage && (
@@ -1003,16 +786,16 @@ export default function App() {
                   <Paperclip size={16} />
                 </button>
 
-                {/* Shutter snapshot capture button (Visible only when camera backdrop active) */}
+                {/* Shutter button — always enabled while camera is open */}
                 {isCameraOpen && (
                   <button
                     type="button"
                     onClick={handleCaptureFrame}
-                    className="p-2 text-red-500 hover:text-red-650 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all"
-                    title="Snapshot: Capture pattern from background camera"
+                    className="p-2 rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
+                    title="Take a photo"
                   >
-                    <div className="h-4.5 w-4.5 rounded-full border-2 border-red-500 bg-red-100 flex items-center justify-center animate-pulse">
-                      <div className="h-2 w-2 rounded-full bg-red-600 animate-ping-slow" />
+                    <div className="h-[18px] w-[18px] rounded-full border-2 border-red-500 bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
+                      <div className="h-2 w-2 rounded-full bg-red-500" />
                     </div>
                   </button>
                 )}
